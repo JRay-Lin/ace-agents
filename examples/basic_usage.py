@@ -9,15 +9,14 @@ import os
 import sys
 
 # Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from ace_agents import AceFramework, ContextPlaybook, Bullet
 import logging
 
 # Setup logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
 
@@ -38,35 +37,32 @@ def example_offline_adaptation() -> None:
     # Users should pass the API key directly
     ace = AceFramework(
         provider="openrouter",
-        base_url="https://openrouter.ai/api/v1",
         api_key="your-api-key-here",  # Replace with your actual API key
         model="anthropic/claude-3.5-sonnet",
-        temperature=0.7
+        temperature=0.7,
     )
 
     # Sample training data
     training_data = [
         {
             "query": "How do I validate an email address?",
-            "ground_truth": "Use a regex pattern like ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+            "ground_truth": "Use a regex pattern like ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
         },
         {
             "query": "What's the best way to hash passwords?",
-            "ground_truth": "Use bcrypt or argon2 with a sufficient work factor"
+            "ground_truth": "Use bcrypt or argon2 with a sufficient work factor",
         },
         {
             "query": "How do I prevent SQL injection?",
-            "ground_truth": "Use parameterized queries or prepared statements"
-        }
+            "ground_truth": "Use parameterized queries or prepared statements",
+        },
     ]
 
     print(f"\nTraining with {len(training_data)} examples...")
 
     # Perform offline adaptation
     stats = ace.offline_adapt(
-        training_data=training_data,
-        epochs=2,
-        save_path="playbook_trained.json"
+        training_data=training_data, epochs=2, save_path="playbook_trained.json"
     )
 
     print("\nTraining complete!")
@@ -88,9 +84,8 @@ def example_online_adaptation() -> None:
     # Initialize with existing playbook
     ace = AceFramework(
         provider="openrouter",
-        base_url="https://openrouter.ai/api/v1",
         api_key="your-api-key-here",  # Replace with your actual API key
-        model="anthropic/claude-3.5-sonnet"
+        model="anthropic/claude-3.5-sonnet",
         # Playbook will be automatically loaded from data/playbook/playbook.json
     )
 
@@ -100,7 +95,7 @@ def example_online_adaptation() -> None:
 
     response = ace.online_adapt(
         query=query,
-        ground_truth="Store API keys in environment variables or a secure vault service"
+        ground_truth="Store API keys in environment variables or a secure vault service",
     )
 
     print(f"Response: {response[:200]}...")
@@ -124,12 +119,12 @@ def example_simple_generation() -> None:
     bullet1 = Bullet(
         id=Bullet.generate_id(),
         content="Always validate user input before processing",
-        section="strategies_and_hard_rules"
+        section="strategies_and_hard_rules",
     )
     bullet2 = Bullet(
         id=Bullet.generate_id(),
         content="Use parameterized queries to prevent SQL injection",
-        section="strategies_and_hard_rules"
+        section="strategies_and_hard_rules",
     )
 
     playbook.add_bullet(bullet1)
@@ -142,11 +137,10 @@ def example_simple_generation() -> None:
     # Initialize ACE with custom playbook location
     ace = AceFramework(
         provider="openrouter",
-        base_url="https://openrouter.ai/api/v1",
         api_key="your-api-key-here",  # Replace with your actual API key
         model="anthropic/claude-3.5-sonnet",
         playbook_dir=".",
-        playbook_name="playbook_manual.json"
+        playbook_name="playbook_manual.json",
     )
 
     # Generate without adaptation
@@ -173,7 +167,7 @@ def example_playbook_management() -> None:
         bullet = Bullet(
             id=Bullet.generate_id(),
             content=f"Strategy {i + 1}: Important security rule",
-            section="strategies_and_hard_rules"
+            section="strategies_and_hard_rules",
         )
         playbook.add_bullet(bullet)
 
@@ -189,7 +183,9 @@ def example_playbook_management() -> None:
     # Show bullet scores
     print("\nBullet scores:")
     for bullet in bullets:
-        print(f"  {bullet.id}: {bullet.get_score()} (H:{bullet.helpful_count}, X:{bullet.harmful_count})")
+        print(
+            f"  {bullet.id}: {bullet.get_score()} (H:{bullet.helpful_count}, X:{bullet.harmful_count})"
+        )
 
     # Convert to prompt
     print("\nPlaybook as prompt:")

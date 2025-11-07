@@ -22,7 +22,6 @@ class AceFramework:
     adaptive context optimization through offline and online adaptation.
 
     @param provider LLM provider name (e.g., 'openrouter')
-    @param base_url Base URL for the LLM API
     @param api_key API key for authentication
     @param model Model identifier to use
     @param playbook_dir Directory to store playbooks (default: 'data/playbook')
@@ -34,19 +33,17 @@ class AceFramework:
     def __init__(
         self,
         provider: str,
-        base_url: str,
         api_key: str,
         model: str,
         playbook_dir: str = "data/playbook",
         playbook_name: str = "playbook.json",
         temperature: float = 0.7,
-        max_tokens: int = 2048
+        max_tokens: int = 2048,
     ) -> None:
         """
         @brief Initialize the ACE framework.
 
         @param provider LLM provider name
-        @param base_url API base URL
         @param api_key API key
         @param model Model identifier
         @param playbook_dir Directory path for playbooks (default: 'data/playbook')
@@ -55,13 +52,17 @@ class AceFramework:
         @param max_tokens Default max tokens
         """
         # Initialize LLM client
+        base_url_dict = {
+            "openrouter": "https://openrouter.ai/api/v1",
+            "openai": "https://api.openai.com/v1/responses",
+        }
         self.llm_client = LLMClient(
             provider=provider,
-            base_url=base_url,
+            base_url=base_url_dict[provider],
             api_key=api_key,
             model=model,
             default_temperature=temperature,
-            default_max_tokens=max_tokens
+            default_max_tokens=max_tokens,
         )
 
         # Initialize agents
@@ -92,7 +93,7 @@ class AceFramework:
         training_data: List[Dict[str, Any]],
         epochs: int = 3,
         auto_save: bool = True,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> Dict[str, Any]:
         """
         @brief Perform offline adaptation on training data.
@@ -115,7 +116,9 @@ class AceFramework:
             "bullets_removed": 0,
         }
 
-        self.logger.info(f"Starting offline adaptation: {len(training_data)} examples, {epochs} epochs")
+        self.logger.info(
+            f"Starting offline adaptation: {len(training_data)} examples, {epochs} epochs"
+        )
 
         for epoch in range(epochs):
             self.logger.info(f"Epoch {epoch + 1}/{epochs}")
@@ -140,9 +143,7 @@ class AceFramework:
         return stats
 
     def _run_adaptation_epoch(
-        self,
-        training_data: List[Dict[str, Any]],
-        **kwargs: Any
+        self, training_data: List[Dict[str, Any]], **kwargs: Any
     ) -> Dict[str, Any]:
         """
         @brief Run a single adaptation epoch.
@@ -164,9 +165,7 @@ class AceFramework:
             # Generate response
             try:
                 response, bullet_feedback = self.generator.generate(
-                    query=query,
-                    playbook=self.playbook,
-                    **kwargs
+                    query=query, playbook=self.playbook, **kwargs
                 )
 
                 # Reflect on the generation
@@ -175,15 +174,11 @@ class AceFramework:
                     trajectory=response,
                     ground_truth=ground_truth,
                     playbook=self.playbook,
-                    **kwargs
+                    **kwargs,
                 )
 
                 # Curate updates
-                deltas = self.curator.curate(
-                    insights=insights,
-                    playbook=self.playbook,
-                    **kwargs
-                )
+                deltas = self.curator.curate(insights=insights, playbook=self.playbook, **kwargs)
 
                 # Apply deltas
                 self.curator.apply_deltas(deltas, self.playbook)
@@ -210,7 +205,7 @@ class AceFramework:
         ground_truth: Optional[str] = None,
         execution_result: Optional[Dict[str, Any]] = None,
         auto_save: bool = True,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> str:
         """
         @brief Perform online adaptation with a single query.
@@ -227,9 +222,7 @@ class AceFramework:
         """
         # Generate response
         response, bullet_feedback = self.generator.generate(
-            query=query,
-            playbook=self.playbook,
-            **kwargs
+            query=query, playbook=self.playbook, **kwargs
         )
 
         # If feedback is available, update playbook
@@ -240,14 +233,10 @@ class AceFramework:
                 ground_truth=ground_truth,
                 execution_result=execution_result,
                 playbook=self.playbook,
-                **kwargs
+                **kwargs,
             )
 
-            deltas = self.curator.curate(
-                insights=insights,
-                playbook=self.playbook,
-                **kwargs
-            )
+            deltas = self.curator.curate(insights=insights, playbook=self.playbook, **kwargs)
 
             self.curator.apply_deltas(deltas, self.playbook)
 
@@ -258,11 +247,7 @@ class AceFramework:
 
         return response
 
-    def generate(
-        self,
-        query: str,
-        **kwargs: Any
-    ) -> str:
+    def generate(self, query: str, **kwargs: Any) -> str:
         """
         @brief Generate a response without adaptation.
 
@@ -270,11 +255,7 @@ class AceFramework:
         @param kwargs Additional parameters
         @return Generated response
         """
-        response, _ = self.generator.generate(
-            query=query,
-            playbook=self.playbook,
-            **kwargs
-        )
+        response, _ = self.generator.generate(query=query, playbook=self.playbook, **kwargs)
         return response
 
     def save_playbook(self, path: str, format: str = "json") -> None:
@@ -304,9 +285,8 @@ class AceFramework:
             "total_bullets": len(self.playbook),
             "sections": len(self.playbook.sections),
             "section_details": {
-                section: len(bullets)
-                for section, bullets in self.playbook.sections.items()
-            }
+                section: len(bullets) for section, bullets in self.playbook.sections.items()
+            },
         }
 
     def __repr__(self) -> str:
