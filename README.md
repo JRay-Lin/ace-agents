@@ -36,10 +36,10 @@ git clone https://github.com/yourusername/ace-agents.git
 cd ace-agents
 
 # Install dependencies
-pip install -e .
+uv sync
 
 # Or install with development dependencies
-pip install -e ".[dev]"
+uv sync --extra dev
 ```
 
 ## Quick Start
@@ -53,7 +53,6 @@ from ace_agents import AceFramework
 # Playbook will be automatically saved to data/playbook/playbook.json
 ace = AceFramework(
     provider="openrouter",
-    base_url="https://openrouter.ai/api/v1",
     api_key="your-api-key",
     model="anthropic/claude-3.5-sonnet"
 )
@@ -69,7 +68,6 @@ print(response)
 # Use a custom directory for playbooks
 ace = AceFramework(
     provider="openrouter",
-    base_url="https://openrouter.ai/api/v1",
     api_key="your-api-key",
     model="anthropic/claude-3.5-sonnet",
     playbook_dir="my_project/playbooks",
@@ -107,7 +105,6 @@ print(f"Training complete: {stats}")
 # The framework automatically loads existing playbook from data/playbook/playbook.json
 ace = AceFramework(
     provider="openrouter",
-    base_url="https://openrouter.ai/api/v1",
     api_key="your-api-key",
     model="anthropic/claude-3.5-sonnet"
 )
@@ -190,8 +187,7 @@ load_dotenv()
 # Pass to AceFramework
 ace = AceFramework(
     provider="openrouter",
-    base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("OPENROUTER_API_KEY"),
+    api_key=os.getenv("API_KEY"),
     model=os.getenv("ACE_MODEL", "anthropic/claude-3.5-sonnet"),
     temperature=float(os.getenv("ACE_TEMPERATURE", "0.7")),
     max_tokens=int(os.getenv("ACE_MAX_TOKENS", "2048"))
@@ -231,7 +227,7 @@ See the `examples/` directory for more detailed usage examples:
 2. Edit `.env` and fill in your API keys:
 
     ```bash
-    OPENROUTER_API_KEY=your-actual-api-key
+    API_KEY=your-actual-api-key
     ```
 
 3. Run the example:
