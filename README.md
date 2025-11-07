@@ -275,7 +275,7 @@ Based on the original ACE paper:
 
 This implementation is based on the paper:
 
-**"ACE: Agentic Context Engineering for Rapid and Effective Prompt Optimization"**
+**"Agentic Context Engineering: Evolving Contexts for Self-Improving Language Models"**
 arXiv:2510.04618v1
 
 ## License
@@ -292,7 +292,7 @@ If you use this framework in your research, please cite:
 
 ```bibtex
 @article{ace2025,
-  title={ACE: Agentic Context Engineering for Rapid and Effective Prompt Optimization},
+  title={Agentic Context Engineering: Evolving Contexts for Self-Improving Language Model},
   journal={arXiv preprint arXiv:2510.04618},
   year={2025}
 }
