@@ -13,38 +13,38 @@ from dataclasses import dataclass
 
 @dataclass
 class Message:
-    """
-    @brief Represents a chat message.
+    """Represents a chat message.
 
-    @param role The role of the message sender ('system', 'user', or 'assistant')
-    @param content The content of the message
+    Attributes:
+        role: The role of the message sender ('system', 'user', or 'assistant').
+        content: The content of the message.
     """
     role: str
     content: str
 
     def to_dict(self) -> Dict[str, str]:
-        """
-        @brief Convert message to dictionary format.
+        """Convert message to dictionary format.
 
-        @return Dictionary representation of the message
+        Returns:
+            Dictionary with 'role' and 'content' keys.
         """
         return {"role": self.role, "content": self.content}
 
 
 class LLMClient:
-    """
-    @brief Client for making LLM API calls using requests library.
+    """Client for making LLM API calls using requests library.
 
     This client supports multiple LLM providers through a unified interface.
     It uses the requests library for HTTP calls, making it easy to extend
     and debug.
 
-    @param provider The LLM provider name (e.g., 'openrouter', 'openai')
-    @param base_url The base URL for the API endpoint
-    @param api_key The API key for authentication
-    @param model The model identifier to use
-    @param default_temperature Default temperature for sampling
-    @param default_max_tokens Default maximum tokens to generate
+    Attributes:
+        provider: The LLM provider name (e.g., 'openrouter', 'openai').
+        base_url: The base URL for the API endpoint.
+        api_key: The API key for authentication.
+        model: The model identifier to use.
+        default_temperature: Default temperature for sampling.
+        default_max_tokens: Default maximum tokens to generate.
     """
 
     def __init__(
@@ -56,15 +56,15 @@ class LLMClient:
         default_temperature: float = 0.7,
         default_max_tokens: int = 2048
     ) -> None:
-        """
-        @brief Initialize the LLM client.
+        """Initialize the LLM client.
 
-        @param provider The LLM provider name
-        @param base_url The base URL for the API
-        @param api_key The API key
-        @param model The model identifier
-        @param default_temperature Default temperature setting
-        @param default_max_tokens Default max tokens setting
+        Args:
+            provider: The LLM provider name.
+            base_url: The base URL for the API.
+            api_key: The API key for authentication.
+            model: The model identifier.
+            default_temperature: Default temperature setting. Defaults to 0.7.
+            default_max_tokens: Default max tokens setting. Defaults to 2048.
         """
         self.provider = provider
         self.base_url = base_url.rstrip('/')
@@ -74,10 +74,10 @@ class LLMClient:
         self.default_max_tokens = default_max_tokens
 
     def _get_headers(self) -> Dict[str, str]:
-        """
-        @brief Get HTTP headers for API requests.
+        """Get HTTP headers for API requests.
 
-        @return Dictionary of headers
+        Returns:
+            Dictionary of HTTP headers including Authorization and Content-Type.
         """
         return {
             "Authorization": f"Bearer {self.api_key}",
@@ -91,14 +91,16 @@ class LLMClient:
         max_tokens: Optional[int] = None,
         **kwargs: Any
     ) -> Dict[str, Any]:
-        """
-        @brief Build the request body for the API call.
+        """Build the request body for the API call.
 
-        @param messages List of messages to send
-        @param temperature Temperature for sampling
-        @param max_tokens Maximum tokens to generate
-        @param kwargs Additional parameters
-        @return Request body dictionary
+        Args:
+            messages: List of messages to send.
+            temperature: Temperature for sampling. Defaults to None (uses default_temperature).
+            max_tokens: Maximum tokens to generate. Defaults to None (uses default_max_tokens).
+            **kwargs: Additional parameters to include in the request.
+
+        Returns:
+            Request body dictionary with model, messages, temperature, and max_tokens.
         """
         body = {
             "model": self.model,
@@ -119,15 +121,19 @@ class LLMClient:
         max_tokens: Optional[int] = None,
         **kwargs: Any
     ) -> Dict[str, Any]:
-        """
-        @brief Make a chat completion API call.
+        """Make a chat completion API call.
 
-        @param messages List of messages for the conversation
-        @param temperature Temperature for sampling (optional)
-        @param max_tokens Maximum tokens to generate (optional)
-        @param kwargs Additional parameters for the API
-        @return API response dictionary
-        @throws requests.HTTPError If the API call fails
+        Args:
+            messages: List of messages for the conversation.
+            temperature: Temperature for sampling. Defaults to None.
+            max_tokens: Maximum tokens to generate. Defaults to None.
+            **kwargs: Additional parameters for the API.
+
+        Returns:
+            API response dictionary from the LLM provider.
+
+        Raises:
+            requests.HTTPError: If the API call fails.
         """
         url = f"{self.base_url}/chat/completions"
         headers = self._get_headers()
@@ -139,11 +145,16 @@ class LLMClient:
         return response.json()
 
     def extract_content(self, response: Dict[str, Any]) -> str:
-        """
-        @brief Extract the content from an API response.
+        """Extract the content from an API response.
 
-        @param response The API response dictionary
-        @return The extracted content string
+        Args:
+            response: The API response dictionary.
+
+        Returns:
+            The extracted content string from the first choice.
+
+        Raises:
+            ValueError: If content extraction fails.
         """
         try:
             return response["choices"][0]["message"]["content"]
@@ -158,15 +169,17 @@ class LLMClient:
         max_tokens: Optional[int] = None,
         **kwargs: Any
     ) -> str:
-        """
-        @brief Make a simple completion call with a single prompt.
+        """Make a simple completion call with a single prompt.
 
-        @param prompt The user prompt
-        @param system_prompt Optional system prompt
-        @param temperature Temperature for sampling (optional)
-        @param max_tokens Maximum tokens to generate (optional)
-        @param kwargs Additional parameters for the API
-        @return The generated completion text
+        Args:
+            prompt: The user prompt.
+            system_prompt: Optional system prompt. Defaults to None.
+            temperature: Temperature for sampling. Defaults to None.
+            max_tokens: Maximum tokens to generate. Defaults to None.
+            **kwargs: Additional parameters for the API.
+
+        Returns:
+            The generated completion text.
         """
         messages = []
 
@@ -185,14 +198,16 @@ class LLMClient:
         max_tokens: Optional[int] = None,
         **kwargs: Any
     ) -> str:
-        """
-        @brief Make a multi-turn conversation completion.
+        """Make a multi-turn conversation completion.
 
-        @param conversation List of message dictionaries with 'role' and 'content'
-        @param temperature Temperature for sampling (optional)
-        @param max_tokens Maximum tokens to generate (optional)
-        @param kwargs Additional parameters for the API
-        @return The generated completion text
+        Args:
+            conversation: List of message dictionaries with 'role' and 'content' keys.
+            temperature: Temperature for sampling. Defaults to None.
+            max_tokens: Maximum tokens to generate. Defaults to None.
+            **kwargs: Additional parameters for the API.
+
+        Returns:
+            The generated completion text.
         """
         messages = [Message(role=msg["role"], content=msg["content"]) for msg in conversation]
 
@@ -200,11 +215,14 @@ class LLMClient:
         return self.extract_content(response)
 
     def get_usage_info(self, response: Dict[str, Any]) -> Dict[str, int]:
-        """
-        @brief Extract token usage information from API response.
+        """Extract token usage information from API response.
 
-        @param response The API response dictionary
-        @return Dictionary with usage statistics
+        Args:
+            response: The API response dictionary.
+
+        Returns:
+            Dictionary with usage statistics including prompt_tokens, completion_tokens,
+            and total_tokens.
         """
         usage = response.get("usage", {})
         return {
@@ -214,9 +232,9 @@ class LLMClient:
         }
 
     def __repr__(self) -> str:
-        """
-        @brief Get string representation of the client.
+        """Get string representation of the client.
 
-        @return String representation
+        Returns:
+            String representation showing provider and model.
         """
         return f"LLMClient(provider='{self.provider}', model='{self.model}')"

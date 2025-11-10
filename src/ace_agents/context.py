@@ -15,21 +15,21 @@ import uuid
 
 @dataclass
 class Bullet:
-    """
-    @brief A single context item (bullet) in the playbook.
+    """A single context item (bullet) in the playbook.
 
     A Bullet represents a strategy, insight, or rule that has been learned
     through the ACE adaptation process. Each bullet tracks its effectiveness
     through helpful and harmful counters.
 
-    @param id Unique identifier for the bullet (e.g., "ctx-00001")
-    @param content The actual strategy, insight, or rule text
-    @param section Category/section this bullet belongs to
-    @param helpful_count Number of times this bullet was marked as helpful
-    @param harmful_count Number of times this bullet was marked as harmful
-    @param created_at Timestamp when this bullet was created
-    @param updated_at Timestamp when this bullet was last updated
-    @param metadata Additional metadata for the bullet
+    Attributes:
+        id: Unique identifier for the bullet (e.g., "ctx-00001").
+        content: The actual strategy, insight, or rule text.
+        section: Category/section this bullet belongs to.
+        helpful_count: Number of times this bullet was marked as helpful.
+        harmful_count: Number of times this bullet was marked as harmful.
+        created_at: Timestamp when this bullet was created.
+        updated_at: Timestamp when this bullet was last updated.
+        metadata: Additional metadata for the bullet.
     """
 
     id: str
@@ -43,40 +43,36 @@ class Bullet:
 
     @staticmethod
     def generate_id() -> str:
-        """
-        @brief Generate a unique bullet ID.
+        """Generate a unique bullet ID.
 
-        @return A unique bullet identifier string
+        Returns:
+            A unique bullet identifier string in format 'ctx-XXXXXXXX'.
         """
         return f"ctx-{uuid.uuid4().hex[:8]}"
 
     def mark_helpful(self) -> None:
-        """
-        @brief Increment the helpful counter for this bullet.
-        """
+        """Increment the helpful counter for this bullet."""
         self.helpful_count += 1
         self.updated_at = datetime.now()
 
     def mark_harmful(self) -> None:
-        """
-        @brief Increment the harmful counter for this bullet.
-        """
+        """Increment the harmful counter for this bullet."""
         self.harmful_count += 1
         self.updated_at = datetime.now()
 
     def get_score(self) -> int:
-        """
-        @brief Calculate the net score of this bullet.
+        """Calculate the net score of this bullet.
 
-        @return The score (helpful_count - harmful_count)
+        Returns:
+            The score computed as (helpful_count - harmful_count).
         """
         return self.helpful_count - self.harmful_count
 
     def to_dict(self) -> Dict[str, Any]:
-        """
-        @brief Convert bullet to dictionary format.
+        """Convert bullet to dictionary format.
 
-        @return Dictionary representation of the bullet
+        Returns:
+            Dictionary representation of the bullet with ISO-formatted timestamps.
         """
         data = asdict(self)
         data['created_at'] = self.created_at.isoformat()
@@ -85,11 +81,13 @@ class Bullet:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Bullet":
-        """
-        @brief Create a Bullet instance from dictionary data.
+        """Create a Bullet instance from dictionary data.
 
-        @param data Dictionary containing bullet data
-        @return A new Bullet instance
+        Args:
+            data: Dictionary containing bullet data with ISO-formatted timestamps.
+
+        Returns:
+            A new Bullet instance.
         """
         data = data.copy()
         data['created_at'] = datetime.fromisoformat(data['created_at'])
@@ -98,30 +96,28 @@ class Bullet:
 
 
 class ContextPlaybook:
-    """
-    @brief Manages a collection of bullets organized by sections.
+    """Manages a collection of bullets organized by sections.
 
     The ContextPlaybook is the core data structure for storing and managing
     context learned through the ACE framework. It supports operations like
     adding, updating, removing bullets, and converting the playbook to
     prompt format for LLM consumption.
 
-    @param bullets List of all bullets in the playbook
-    @param sections Dictionary mapping section names to lists of bullets
+    Attributes:
+        bullets: List of all bullets in the playbook.
+        sections: Dictionary mapping section names to lists of bullets.
     """
 
     def __init__(self) -> None:
-        """
-        @brief Initialize an empty context playbook.
-        """
+        """Initialize an empty context playbook."""
         self.bullets: List[Bullet] = []
         self.sections: Dict[str, List[Bullet]] = {}
 
     def add_bullet(self, bullet: Bullet) -> None:
-        """
-        @brief Add a new bullet to the playbook.
+        """Add a new bullet to the playbook.
 
-        @param bullet The bullet to add
+        Args:
+            bullet: The bullet to add.
         """
         self.bullets.append(bullet)
 
@@ -136,14 +132,16 @@ class ContextPlaybook:
         section: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None
     ) -> bool:
-        """
-        @brief Update an existing bullet.
+        """Update an existing bullet.
 
-        @param bullet_id The ID of the bullet to update
-        @param content New content for the bullet (optional)
-        @param section New section for the bullet (optional)
-        @param metadata New metadata for the bullet (optional)
-        @return True if bullet was found and updated, False otherwise
+        Args:
+            bullet_id: The ID of the bullet to update.
+            content: New content for the bullet. Defaults to None.
+            section: New section for the bullet. Defaults to None.
+            metadata: New metadata for the bullet. Defaults to None.
+
+        Returns:
+            True if bullet was found and updated, False otherwise.
         """
         bullet = self.get_bullet(bullet_id)
         if bullet is None:
@@ -173,11 +171,13 @@ class ContextPlaybook:
         return True
 
     def remove_bullet(self, bullet_id: str) -> bool:
-        """
-        @brief Remove a bullet from the playbook.
+        """Remove a bullet from the playbook.
 
-        @param bullet_id The ID of the bullet to remove
-        @return True if bullet was found and removed, False otherwise
+        Args:
+            bullet_id: The ID of the bullet to remove.
+
+        Returns:
+            True if bullet was found and removed, False otherwise.
         """
         bullet = self.get_bullet(bullet_id)
         if bullet is None:
@@ -195,11 +195,13 @@ class ContextPlaybook:
         return True
 
     def get_bullet(self, bullet_id: str) -> Optional[Bullet]:
-        """
-        @brief Retrieve a bullet by its ID.
+        """Retrieve a bullet by its ID.
 
-        @param bullet_id The ID of the bullet to retrieve
-        @return The bullet if found, None otherwise
+        Args:
+            bullet_id: The ID of the bullet to retrieve.
+
+        Returns:
+            The bullet if found, None otherwise.
         """
         for bullet in self.bullets:
             if bullet.id == bullet_id:
@@ -207,20 +209,24 @@ class ContextPlaybook:
         return None
 
     def get_bullets_by_section(self, section: str) -> List[Bullet]:
-        """
-        @brief Get all bullets in a specific section.
+        """Get all bullets in a specific section.
 
-        @param section The section name
-        @return List of bullets in the section
+        Args:
+            section: The section name.
+
+        Returns:
+            List of bullets in the section, or empty list if section doesn't exist.
         """
         return self.sections.get(section, [])
 
     def to_prompt(self, include_scores: bool = False) -> str:
-        """
-        @brief Convert the playbook to a formatted prompt string for LLM.
+        """Convert the playbook to a formatted prompt string for LLM.
 
-        @param include_scores Whether to include helpful/harmful scores
-        @return Formatted string representation of the playbook
+        Args:
+            include_scores: Whether to include helpful/harmful scores. Defaults to False.
+
+        Returns:
+            Formatted markdown string representation of the playbook.
         """
         if not self.bullets:
             return "No context available."
@@ -244,10 +250,10 @@ class ContextPlaybook:
         return "\n".join(lines)
 
     def to_dict(self) -> Dict[str, Any]:
-        """
-        @brief Convert playbook to dictionary format.
+        """Convert playbook to dictionary format.
 
-        @return Dictionary representation of the playbook
+        Returns:
+            Dictionary representation with 'bullets' and 'sections' keys.
         """
         return {
             "bullets": [bullet.to_dict() for bullet in self.bullets],
@@ -256,11 +262,13 @@ class ContextPlaybook:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "ContextPlaybook":
-        """
-        @brief Create a ContextPlaybook from dictionary data.
+        """Create a ContextPlaybook from dictionary data.
 
-        @param data Dictionary containing playbook data
-        @return A new ContextPlaybook instance
+        Args:
+            data: Dictionary containing playbook data with 'bullets' list.
+
+        Returns:
+            A new ContextPlaybook instance.
         """
         playbook = cls()
         for bullet_data in data.get("bullets", []):
@@ -269,11 +277,14 @@ class ContextPlaybook:
         return playbook
 
     def save(self, path: str, format: str = "json") -> None:
-        """
-        @brief Save the playbook to a file.
+        """Save the playbook to a file.
 
-        @param path File path to save to
-        @param format File format ('json' or 'yaml')
+        Args:
+            path: File path to save to.
+            format: File format ('json' or 'yaml'). Defaults to 'json'.
+
+        Raises:
+            ValueError: If format is not 'json' or 'yaml'.
         """
         data = self.to_dict()
 
@@ -287,11 +298,16 @@ class ContextPlaybook:
 
     @classmethod
     def load(cls, path: str) -> "ContextPlaybook":
-        """
-        @brief Load a playbook from a file.
+        """Load a playbook from a file.
 
-        @param path File path to load from
-        @return A new ContextPlaybook instance
+        Args:
+            path: File path to load from (must end with .json, .yaml, or .yml).
+
+        Returns:
+            A new ContextPlaybook instance.
+
+        Raises:
+            ValueError: If file extension is not supported.
         """
         with open(path, 'r', encoding='utf-8') as f:
             if path.endswith('.json'):
@@ -304,17 +320,17 @@ class ContextPlaybook:
         return cls.from_dict(data)
 
     def __len__(self) -> int:
-        """
-        @brief Get the number of bullets in the playbook.
+        """Get the number of bullets in the playbook.
 
-        @return Number of bullets
+        Returns:
+            Number of bullets.
         """
         return len(self.bullets)
 
     def __repr__(self) -> str:
-        """
-        @brief Get string representation of the playbook.
+        """Get string representation of the playbook.
 
-        @return String representation
+        Returns:
+            String representation showing bullet and section counts.
         """
         return f"ContextPlaybook(bullets={len(self.bullets)}, sections={len(self.sections)})"

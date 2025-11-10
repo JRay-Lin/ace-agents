@@ -11,23 +11,24 @@ from .llm_client import LLMClient
 from .agents import GeneratorAgent, ReflectorAgent, CuratorAgent
 from .context import ContextPlaybook
 import logging
-import os
 
 
 class AceFramework:
-    """
-    @brief Main framework for Agentic Context Engineering.
+    """Main framework for Agentic Context Engineering.
 
     The AceFramework orchestrates the three core agents to enable
     adaptive context optimization through offline and online adaptation.
 
-    @param provider LLM provider name (e.g., 'openrouter')
-    @param api_key API key for authentication
-    @param model Model identifier to use
-    @param playbook_dir Directory to store playbooks (default: 'data/playbook')
-    @param playbook_name Playbook filename (default: 'playbook.json')
-    @param temperature Default temperature for generation
-    @param max_tokens Default maximum tokens for generation
+    Attributes:
+        llm_client: LLM client instance for API communication.
+        generator: Generator agent for response generation.
+        reflector: Reflector agent for quality assessment.
+        curator: Curator agent for playbook management.
+        playbook_dir: Directory path for storing playbooks.
+        playbook_name: Name of the playbook file.
+        playbook_path: Full path to the playbook file.
+        playbook: Context playbook instance.
+        logger: Logger instance for framework operations.
     """
 
     def __init__(
@@ -40,16 +41,16 @@ class AceFramework:
         temperature: float = 0.7,
         max_tokens: int = 2048,
     ) -> None:
-        """
-        @brief Initialize the ACE framework.
+        """Initialize the ACE framework.
 
-        @param provider LLM provider name
-        @param api_key API key
-        @param model Model identifier
-        @param playbook_dir Directory path for playbooks (default: 'data/playbook')
-        @param playbook_name Playbook filename (default: 'playbook.json')
-        @param temperature Default temperature
-        @param max_tokens Default max tokens
+        Args:
+            provider: LLM provider name (e.g., 'openrouter', 'openai').
+            api_key: API key for authentication.
+            model: Model identifier to use.
+            playbook_dir: Directory path for playbooks. Defaults to 'data/playbook'.
+            playbook_name: Playbook filename. Defaults to 'playbook.json'.
+            temperature: Default temperature for generation. Defaults to 0.7.
+            max_tokens: Default maximum tokens for generation. Defaults to 2048.
         """
         # Initialize LLM client
         base_url_dict = {
@@ -95,18 +96,25 @@ class AceFramework:
         auto_save: bool = True,
         **kwargs: Any,
     ) -> Dict[str, Any]:
-        """
-        @brief Perform offline adaptation on training data.
+        """Perform offline adaptation on training data.
 
         This method iteratively improves the context playbook using
         labeled training examples. It runs multiple epochs of generation,
         reflection, and curation.
 
-        @param training_data List of training examples with 'query' and 'ground_truth'
-        @param epochs Number of training epochs
-        @param auto_save Whether to automatically save playbook after training (default: True)
-        @param kwargs Additional parameters
-        @return Dictionary with adaptation statistics
+        Args:
+            training_data: List of training examples with 'query' and 'ground_truth' keys.
+            epochs: Number of training epochs. Defaults to 3.
+            auto_save: Whether to automatically save playbook after training. Defaults to True.
+            **kwargs: Additional parameters passed to agent methods.
+
+        Returns:
+            Dictionary with adaptation statistics including:
+                - total_examples: Number of training examples processed
+                - epochs: Number of epochs completed
+                - bullets_added: Total bullets added to playbook
+                - bullets_updated: Total bullets updated in playbook
+                - bullets_removed: Total bullets removed from playbook
         """
         stats = {
             "total_examples": len(training_data),
@@ -145,12 +153,15 @@ class AceFramework:
     def _run_adaptation_epoch(
         self, training_data: List[Dict[str, Any]], **kwargs: Any
     ) -> Dict[str, Any]:
-        """
-        @brief Run a single adaptation epoch.
+        """Run a single adaptation epoch.
 
-        @param training_data Training examples
-        @param kwargs Additional parameters
-        @return Epoch statistics
+        Args:
+            training_data: List of training examples with 'query' and optional 'ground_truth'.
+            **kwargs: Additional parameters passed to agent methods.
+
+        Returns:
+            Dictionary with epoch statistics including bullets_added, bullets_updated,
+            and bullets_removed counts.
         """
         stats = {
             "bullets_added": 0,
@@ -207,18 +218,20 @@ class AceFramework:
         auto_save: bool = True,
         **kwargs: Any,
     ) -> str:
-        """
-        @brief Perform online adaptation with a single query.
+        """Perform online adaptation with a single query.
 
         This method generates a response and optionally updates the playbook
         based on execution feedback or ground truth.
 
-        @param query The user query
-        @param ground_truth Ground truth answer (optional)
-        @param execution_result Execution feedback (optional)
-        @param auto_save Whether to automatically save playbook after update (default: True)
-        @param kwargs Additional parameters
-        @return Generated response
+        Args:
+            query: The user query to process.
+            ground_truth: Ground truth answer for evaluation. Defaults to None.
+            execution_result: Execution feedback from running the response. Defaults to None.
+            auto_save: Whether to automatically save playbook after update. Defaults to True.
+            **kwargs: Additional parameters passed to agent methods.
+
+        Returns:
+            Generated response string.
         """
         # Generate response
         response, bullet_feedback = self.generator.generate(
@@ -248,38 +261,43 @@ class AceFramework:
         return response
 
     def generate(self, query: str, **kwargs: Any) -> str:
-        """
-        @brief Generate a response without adaptation.
+        """Generate a response without adaptation.
 
-        @param query The user query
-        @param kwargs Additional parameters
-        @return Generated response
+        Args:
+            query: The user query to process.
+            **kwargs: Additional parameters passed to the generator agent.
+
+        Returns:
+            Generated response string.
         """
         response, _ = self.generator.generate(query=query, playbook=self.playbook, **kwargs)
         return response
 
     def save_playbook(self, path: str, format: str = "json") -> None:
-        """
-        @brief Save the current playbook.
+        """Save the current playbook.
 
-        @param path File path to save to
-        @param format File format ('json' or 'yaml')
+        Args:
+            path: File path to save the playbook to.
+            format: File format for serialization ('json' or 'yaml'). Defaults to 'json'.
         """
         self.playbook.save(path, format)
 
     def load_playbook(self, path: str) -> None:
-        """
-        @brief Load a playbook from file.
+        """Load a playbook from file.
 
-        @param path File path to load from
+        Args:
+            path: File path to load the playbook from.
         """
         self.playbook = ContextPlaybook.load(path)
 
     def get_playbook_stats(self) -> Dict[str, Any]:
-        """
-        @brief Get statistics about the current playbook.
+        """Get statistics about the current playbook.
 
-        @return Dictionary with playbook statistics
+        Returns:
+            Dictionary with playbook statistics including:
+                - total_bullets: Total number of bullets across all sections
+                - sections: Number of sections in the playbook
+                - section_details: Dictionary mapping section names to bullet counts
         """
         return {
             "total_bullets": len(self.playbook),
@@ -290,10 +308,10 @@ class AceFramework:
         }
 
     def __repr__(self) -> str:
-        """
-        @brief Get string representation of the framework.
+        """Get string representation of the framework.
 
-        @return String representation
+        Returns:
+            String representation showing provider, model, and playbook size.
         """
         return (
             f"AceFramework(provider='{self.llm_client.provider}', "

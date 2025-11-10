@@ -12,20 +12,24 @@ import logging
 
 
 class SemanticSimilarity:
-    """
-    @brief Computes semantic similarity between text strings.
+    """Computes semantic similarity between text strings.
 
     This class uses sentence transformers to compute semantic embeddings
     and cosine similarity between texts.
 
-    @param model_name Name of the sentence transformer model
+    Attributes:
+        logger: Logger instance for similarity operations.
+        model: SentenceTransformer model for encoding texts.
     """
 
     def __init__(self, model_name: str = "all-MiniLM-L6-v2") -> None:
-        """
-        @brief Initialize the semantic similarity calculator.
+        """Initialize the semantic similarity calculator.
 
-        @param model_name Sentence transformer model name
+        Args:
+            model_name: Sentence transformer model name. Defaults to "all-MiniLM-L6-v2".
+
+        Raises:
+            Exception: If the model fails to load.
         """
         self.logger = logging.getLogger(__name__ + ".SemanticSimilarity")
         self.logger.info(f"Loading sentence transformer model: {model_name}")
@@ -37,12 +41,14 @@ class SemanticSimilarity:
             raise
 
     def compute_similarity(self, text1: str, text2: str) -> float:
-        """
-        @brief Compute cosine similarity between two texts.
+        """Compute cosine similarity between two texts.
 
-        @param text1 First text
-        @param text2 Second text
-        @return Similarity score between 0 and 1
+        Args:
+            text1: First text.
+            text2: Second text.
+
+        Returns:
+            Similarity score between 0 and 1.
         """
         embeddings = self.model.encode([text1, text2])
         similarity = self._cosine_similarity(embeddings[0], embeddings[1])
@@ -52,11 +58,13 @@ class SemanticSimilarity:
         self,
         texts: List[str]
     ) -> np.ndarray:
-        """
-        @brief Compute pairwise similarities for a list of texts.
+        """Compute pairwise similarities for a list of texts.
 
-        @param texts List of text strings
-        @return NxN similarity matrix
+        Args:
+            texts: List of text strings.
+
+        Returns:
+            NxN similarity matrix where element (i, j) is the similarity between texts[i] and texts[j].
         """
         if len(texts) == 0:
             return np.array([])
@@ -77,12 +85,14 @@ class SemanticSimilarity:
         texts: List[str],
         threshold: float = 0.9
     ) -> List[Tuple[int, int, float]]:
-        """
-        @brief Find pairs of texts with similarity above threshold.
+        """Find pairs of texts with similarity above threshold.
 
-        @param texts List of text strings
-        @param threshold Similarity threshold
-        @return List of (index1, index2, similarity) tuples
+        Args:
+            texts: List of text strings.
+            threshold: Similarity threshold (0-1). Defaults to 0.9.
+
+        Returns:
+            List of (index1, index2, similarity) tuples sorted by similarity (descending).
         """
         similarities = self.compute_pairwise_similarities(texts)
         similar_pairs = []
@@ -99,12 +109,14 @@ class SemanticSimilarity:
 
     @staticmethod
     def _cosine_similarity(vec1: np.ndarray, vec2: np.ndarray) -> float:
-        """
-        @brief Compute cosine similarity between two vectors.
+        """Compute cosine similarity between two vectors.
 
-        @param vec1 First vector
-        @param vec2 Second vector
-        @return Cosine similarity score
+        Args:
+            vec1: First vector.
+            vec2: Second vector.
+
+        Returns:
+            Cosine similarity score between -1 and 1 (typically 0 to 1 for text embeddings).
         """
         dot_product = np.dot(vec1, vec2)
         norm1 = np.linalg.norm(vec1)
